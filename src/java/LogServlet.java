@@ -14,8 +14,8 @@ import java.util.logging.Logger;
 import java.sql.Statement;
 import java.sql.ResultSet;
 
-@WebServlet(urlPatterns = {"/RegServlet"})
-public class RegServlet extends HttpServlet {
+@WebServlet(urlPatterns = {"/LogServlet"})
+public class LogServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String r = """
@@ -33,18 +33,27 @@ public class RegServlet extends HttpServlet {
                    """;
        // response.getWriter().println(r);
        String db = "jdbc:mariadb://localhost/jazovci";
-       String regIme = request.getParameter("ime");
-       String regPass = request.getParameter("pass");
+       String reqIme = request.getParameter("ime");
+       String reqPass = request.getParameter("pass");
        
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             Connection conn = DriverManager.getConnection(db);
             Statement stmt = conn.createStatement();
             String query = """
-                           INSERT INTO potreb (ime,pass) 
-                           VALUES (\"%s\",\"%s\");           
-                           """.formatted(regIme, regPass);
+                           SELECT * FROM potreb;          
+                           """;
             ResultSet rs = stmt.executeQuery(query);
+            conn.close();
+            while(rs.next()){
+                int id = rs.getInt(1);
+                String ime =rs.getString(2);
+                String pass =rs.getString(3);
+                if (reqIme.equals(ime) && reqPass.equals(pass))
+                {
+                response.getWriter().println("Brao!");
+                }
+            }
         } catch (SQLException ex) {
             Logger.getLogger(RegServlet.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
